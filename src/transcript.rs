@@ -18,6 +18,7 @@ pub fn get_transcript(url: &str) -> Result<String> {
     let cmd = binding.args([
         "--print",
         "filename",
+        "--no-simulate",
         "--write-subs",
         "--write-auto-subs",
         "--sub-langs",
