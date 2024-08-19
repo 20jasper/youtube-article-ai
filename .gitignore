@@ -1,3 +1,6 @@
 /target
 /transcripts/**.vtt
 /dist/**.txt
+/dist/**.md
+.env
+.vscode/
