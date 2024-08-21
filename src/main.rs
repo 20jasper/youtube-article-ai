@@ -1,12 +1,12 @@
-use std::{env, fs};
-
 mod ai;
+mod config;
 pub mod error;
 mod transcript;
 
 use ai::completions::CompletionClient;
-use dotenvy::dotenv;
+use config::Config;
 use error::Result;
+use std::fs;
 use transcript::{get_transcript, vtt_to_text};
 
 const PROMPT: &str = r###"
@@ -37,14 +37,12 @@ Another paragraph
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
-    let mut args = env::args();
-    args.next();
-    let url = args.next().ok_or("missing url argument")?;
-
-    let api_key = env::var("OPEN_AI_API_KEY").unwrap();
-    let model = env::var("OPEN_AI_MODEL").unwrap();
-    let base_url = env::var("OPEN_AI_BASE_URL").unwrap();
+    let Config {
+        url,
+        api_key,
+        model,
+        base_url,
+    } = Config::build().unwrap();
 
     let transcript = get_transcript(&url)?;
     let text = vtt_to_text(&transcript);
