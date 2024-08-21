@@ -9,18 +9,7 @@ use dotenvy::dotenv;
 use error::Result;
 use transcript::{get_transcript, vtt_to_text};
 
-#[tokio::main]
-async fn main() -> Result<()> {
-    dotenv().ok();
-    let mut args = env::args();
-    args.next();
-    let url = args.next().ok_or("missing url argument")?;
-
-    let api_key = env::var("OPEN_AI_API_KEY").unwrap();
-    let model = env::var("OPEN_AI_MODEL").unwrap();
-    let base_url = env::var("OPEN_AI_BASE_URL").unwrap();
-
-    let prompt = r###"Act as the author and provide a comprehensive detailed article in {language}
+const PROMPT: &str = r###"Act as the author and provide a comprehensive detailed article in {language}
         in markdown format that has a H1 main title(example "# <{training_shot}> ") and broken down into H2 subtitles (example "## <{training_shot}> ") for the following transcript
 
 You must follow the rules:
@@ -33,14 +22,24 @@ You must follow the rules:
 - Summary should not mention the author or speaker at all should act as your independent writing without referencing the original transcript or speaker.
 - You can use bullet points within the article"###;
 
+#[tokio::main]
+async fn main() -> Result<()> {
+    dotenv().ok();
+    let mut args = env::args();
+    args.next();
+    let url = args.next().ok_or("missing url argument")?;
+
+    let api_key = env::var("OPEN_AI_API_KEY").unwrap();
+    let model = env::var("OPEN_AI_MODEL").unwrap();
+    let base_url = env::var("OPEN_AI_BASE_URL").unwrap();
+
     let transcript = get_transcript(&url)?;
     let text = vtt_to_text(&transcript);
 
     let client = CompletionClient::build(api_key, &base_url, model)?;
-    let res = client.post(prompt, &text).await?;
-    dbg!(&res);
+    let res = client.post(PROMPT, &text).await?;
 
-    fs::write("./dist/done.md", res)?;
+    fs::write(transcript::get_write_path(&url)?, res)?;
 
     Ok(())
 }

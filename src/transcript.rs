@@ -1,6 +1,7 @@
 use crate::Result;
 use core::str;
 use regex::Regex;
+use reqwest::Url;
 use std::borrow::Cow;
 use std::fs;
 use std::path::PathBuf;
@@ -12,6 +13,8 @@ const RETRIES: &str = "10";
 /// https://github.com/yt-dlp/yt-dlp?tab=readme-ov-file#output-template-examples
 const OUTPUT_TEMPLATE: &str = "%(id)s";
 const OUTPUT_PATH: &str = "./transcripts";
+
+const WRITE_DIR: &str = "./dist";
 
 pub fn get_transcript(url: &str) -> Result<String> {
     let mut binding = Command::new(YTDLP);
@@ -81,6 +84,20 @@ pub fn vtt_to_text(transcript: &str) -> String {
         .join(" ")
 }
 
+pub fn get_write_path(url: &str) -> Result<PathBuf> {
+    let parsed_url = url.parse::<Url>()?;
+    let video_id = parsed_url
+        .query_pairs()
+        .find(|(key, _)| key == "v")
+        .map(|(_, id)| id)
+        .unwrap_or("default".into());
+    let write_dir = PathBuf::from(WRITE_DIR);
+    let mut write_path = write_dir.join(video_id.into_owned());
+    write_path.set_extension("md");
+
+    Ok(write_path)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -115,5 +132,13 @@ an entire video for 30 minutes and then
 realizing<00:00:07.359><c> you</c><00:00:07.520><c> forgot</c><00:00:07.839><c> to</c><00:00:08.080><c> plug</c><00:00:08.280><c> in</c><00:00:08.440><c> your</c>";
 
         assert_eq!(vtt_to_text(vtt), "[Music] you know what's really not fun recording an entire video for 30 minutes and then");
+    }
+
+    #[test]
+    fn get_path_from_url() {
+        assert_eq!(
+            get_write_path("https://www.youtube.com?v=gamer").unwrap(),
+            PathBuf::from("./dist/gamer.md")
+        );
     }
 }
