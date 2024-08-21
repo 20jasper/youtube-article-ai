@@ -52,7 +52,6 @@ pub fn get_transcript(url: &str) -> Result<String> {
     let stdout = str::from_utf8(&stdout)?;
     let mut path = PathBuf::from(stdout.trim_end());
     path.set_extension("en.vtt");
-    dbg!(&path);
 
     let transcript = fs::read_to_string(&path)
         .map_err(|e| format!("could not find path {}: {e}", path.display()))?;

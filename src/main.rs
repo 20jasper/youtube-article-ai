@@ -39,7 +39,9 @@ async fn main() -> Result<()> {
     let client = CompletionClient::build(api_key, &base_url, model)?;
     let res = client.post(PROMPT, &text).await?;
 
-    fs::write(transcript::get_write_path(&url)?, res)?;
+    let write_path = transcript::get_write_path(&url)?;
+    fs::write(&write_path, res)?;
 
+    println!("written to {}", write_path.display());
     Ok(())
 }

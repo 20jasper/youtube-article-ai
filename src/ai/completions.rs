@@ -49,7 +49,7 @@ impl CompletionClient {
     ) -> Result<Self> {
         Ok(Self {
             model: model.into(),
-            url: dbg!(base_url.parse::<Url>()?.join(COMPLETIONS_PATH)?),
+            url: base_url.parse::<Url>()?.join(COMPLETIONS_PATH)?,
             token: token.into(),
         })
     }
@@ -69,16 +69,13 @@ impl CompletionClient {
                 },
             ])
             .build()?;
-        dbg!(&payload);
 
-        let response = dbg!(Client::new()
+        let response = Client::new()
             .post(self.url.as_ref())
             .bearer_auth(&self.token)
-            .json(&payload))
-        .send()
-        .await?;
-
-        dbg!(&response);
+            .json(&payload)
+            .send()
+            .await?;
 
         let json = response.json::<Response>().await?;
         let content = json.choices[0].message.content.clone();
