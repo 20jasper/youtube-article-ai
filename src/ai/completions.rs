@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 #[builder(pattern = "mutable")]
 #[builder(derive(Debug))]
 #[builder(setter(into, strip_option), default)]
+#[builder(build_fn(validate = "Self::validate"))]
 pub struct CompletionRequest {
     model: String,
     messages: Vec<Message>,
@@ -30,6 +31,18 @@ pub struct CompletionRequest {
     frequency_penalty: Option<f32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     repetition_penalty: Option<f32>,
+}
+
+impl CompletionRequestBuilder {
+    fn validate(&self) -> std::result::Result<(), String> {
+        if !self.model.as_ref().is_some_and(|s| !s.is_empty()) {
+            return Err("Model cannot be empty".into());
+        }
+        if !self.messages.as_ref().is_some_and(|s| !s.is_empty()) {
+            return Err("Messages cannot be empty".into());
+        }
+        Ok(())
+    }
 }
 
 pub const COMPLETIONS_PATH: &str = "chat/completions";
