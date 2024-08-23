@@ -31,6 +31,7 @@ Another paragraph
 - point 3
 ```
 - Article must be in {language}
+- Article must start with an h1 (# Title)
 - summary should be informative and act as a replacement for the original transcript to the point that the user doesn't have to go back to read the transcript
 - Summary should not mention the author or speaker at all should act as your independent writing without referencing the original transcript or speaker.
 "###;
