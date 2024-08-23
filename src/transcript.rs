@@ -46,7 +46,11 @@ pub fn get_transcript(url: &str) -> Result<String> {
     } = cmd.output()?;
 
     if !status.success() {
-        panic!("uh oh, failed with status {status:?}\n {stderr:?}");
+        Err(format!(
+            "get transcript failed with status code {}, {:?}",
+            status.code().ok_or("could not get status code")?,
+            str::from_utf8(&stderr)?
+        ))?;
     }
 
     let stdout = str::from_utf8(&stdout)?;
